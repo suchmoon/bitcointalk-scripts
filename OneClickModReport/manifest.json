@@ -1,0 +1,26 @@
+{
+
+  "manifest_version": 2,
+  "name": "BCT Helper",
+  "version": "0.1b",
+
+  "description": "Adds some automation for bitcointalk.org.",
+
+  "content_scripts": [
+    {
+      "matches": [ "*://bitcointalk.org/*" ],
+      "js": [ "bct-content.js" ],
+      "css": [ "bct-content.css" ],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "background": 
+  {
+    "scripts": ["bct-background.js"]
+  },
+  
+  "permissions": [
+    "tabs"
+  ]
+}

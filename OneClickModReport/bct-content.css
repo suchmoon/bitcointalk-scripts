@@ -1,0 +1,37 @@
+div.post {
+    border-left: 4px transparent solid;
+}
+
+div.post.post-wait {
+    opacity: 0.5;
+}
+
+div.post.post-error {
+    border-left: 4px red solid;
+}
+
+div.post.post-success {
+    border-left: 4px yellow solid;
+}
+
+.bct-report-button-container {
+    margin-top: 10px;
+    background-color: #bbddbb;
+}
+
+.bct-report-input {
+    margin-left: 5px;
+    height: 12px;
+}
+
+.bct-report-button, .bct-report-button:hover {
+    display: inline-block;
+    border: 1px solid black;
+    margin-left: 5px;
+    padding: 1px 5px 1px 5px;
+    transform: none;
+}
+
+.bct-report-button:hover {
+    cursor: pointer;
+}
