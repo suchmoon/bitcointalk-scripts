@@ -117,6 +117,37 @@ function create_all_controls(button_container, post_container) {
     button_container.appendChild(board_field);
 }
 
+function create_report_indicator(button_container, timestamp, status) {
+    let span = create_span(`Reported ${new Date(timestamp).toDateString()}, status ${status}`);
+    button_container.classList.add(status == "Good" ? "status-good" : status == "Bad" ? "status-bad" : "status-unhandled");
+    button_container.appendChild(span);
+}
+
+function parse_datetime(s, get_today = false) {
+    // November 30, 2020, 03:01:25 PM -- or -- November 30, 2020, 15:01:25
+    let regex_month_day_year = /^([a-zA-Z]+ \d{1,2}, \d{4}, )/;
+    // 2020-11-30, 15:01:25
+    let regex_ymd = /^(\d{4}-\d{1,2}-\d{1,2},? )/;
+    // 11 November 2020, 15:01:25
+    let regex_dmonthy = /^(\d{1,2} [a-zA-Z]+ \d{4},? )/;
+    // 30-11-2020, 15:01:25
+    let regex_dmy = /^((\d{1,2})-(\d{1,2})-(\d{4}),? )(.*)$/;
+    if (regex_month_day_year.test(s)) {
+        return get_today ? regex_month_day_year.exec(s)[1] : Date.parse(s);
+    }
+    if (regex_ymd.test(s)) {
+        return get_today ? regex_ymd.exec(s)[1] : Date.parse(s.replace(",", ""));
+    }
+    if (regex_dmonthy.test(s)) {
+        return get_today ? regex_dmonthy.exec(s)[1] : Date.parse(s);
+    }
+    if (regex_dmy.test(s)) {
+        let parts = regex_dmy.exec(s);
+        return get_today ? parts[1] : Date.parse("" + parts[4] + "-" + parts[3] + "-" + parts[2] + " " + parts[5]);
+    }
+    return false;
+}
+
 // inject the buttons into each message
 document.querySelectorAll("div.post").forEach(post_container => {
     // Try to determine thread ID and post ID
@@ -137,7 +168,16 @@ document.querySelectorAll("div.post").forEach(post_container => {
             let button_container = document.createElement("div");
             button_container.className = "bct-report-button-container";
             post_container.appendChild(button_container);
-            create_all_controls(button_container, post_container);
+            let action_message = { action_name: "get-from-list", action_payload: { item_id: post_container.post_id } };
+            browser.runtime.sendMessage(action_message)
+                .then((message_response) => {
+                    if (message_response && message_response.status) {
+                        create_report_indicator(button_container, message_response.timestamp, message_response.status);
+                    } else {
+                        create_all_controls(button_container, post_container);
+                    }
+                })
+            ;
         } else {
             console.log("Found div.post and post URL but couldn't determine thread/post ID.");
         }
@@ -159,4 +199,27 @@ if (window.location.href.startsWith("https://bitcointalk.org/index.php?board="))
         console.log("Attempting to close this tab...");
         browser.runtime.sendMessage({ action_name: "close-this-tab" });
     }
+}
+
+if (window.location.href.startsWith("https://bitcointalk.org/index.php?action=reportlist;mine")) {
+    let today = document.querySelector("img#upshrink");
+    today = today && today.parentElement && today.parentElement.previousElementSibling && today.parentElement.previousElementSibling.textContent;
+    today = today && parse_datetime(today, true);
+    let is_today = "Today at ";
+    document.querySelectorAll("div#bodyarea table.bordercolor tbody tr").forEach(report_row => {
+        if (report_row.cells[0].className == "windowbg") {
+            let timestamp = parse_datetime(report_row.cells[0].textContent.replace(is_today, today));
+            let thread_id, post_id;
+            [thread_id, post_id] = extract_ids_from_url(report_row.cells[1].querySelector("a").getAttribute("href"));
+            let status = report_row.cells[3].textContent.trim();
+            let payload = {
+                item_id: post_id,
+                item: {
+                    timestamp: timestamp,
+                    status: status
+                }
+            };
+            browser.runtime.sendMessage({ action_name: "put-in-list", action_payload: payload });
+        }
+    });
 }

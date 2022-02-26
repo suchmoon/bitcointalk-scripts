@@ -19,6 +19,19 @@ div.post.post-success {
     background-color: #bbddbb;
 }
 
+.bct-report-button-container.status-good {
+    background-color: #bbddbb;
+}
+
+.bct-report-button-container.status-bad {
+    background-color: #bb0000;
+    color: #dddddd;
+}
+
+.bct-report-button-container.status-unhandled {
+    background-color: #ffee00;
+}
+
 .bct-report-input {
     margin-left: 5px;
     height: 12px;

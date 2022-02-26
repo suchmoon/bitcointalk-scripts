@@ -6,6 +6,9 @@ let PROMISE_INTERVAL = 1300;
 let PROMISE_TIMEOUT = 120000;
 // Number of milliseconds to wait for a tab to load
 let TAB_TIMEOUT = 60000;
+// List of items to persist between page loads
+let global_list = {};
+
 
 
 function handle_next_resolver() {
@@ -67,6 +70,27 @@ function check_if_tab_fully_loaded(tab) {
 browser.runtime.onMessage.addListener(function(message, sender) {
     if (message.action_name === "close-this-tab") {
         browser.tabs.remove(sender.tab.id);
+    }
+    else if (message.action_name === "put-in-list") {
+        /*
+        Expected message format:
+        {
+            action_name: "put-in-list",
+            action_payload: { item_id: "...", item: {...} }
+        }
+        */
+        global_list[message.action_payload.item_id] = message.action_payload.item;
+    }
+    else if (message.action_name === "get-from-list") {
+        /*
+        Expected message format:
+        {
+            action_name: "get-from-list",
+            action_payload: { item_id: "..." }
+        }
+        */
+        console.log("get-from-list", message.action_payload.item_id, global_list[message.action_payload.item_id]);
+        return new Promise((resolve, reject) => { resolve(global_list[message.action_payload.item_id]) });
     }
     else if (message.action_name === "bct-report") {
         /*
