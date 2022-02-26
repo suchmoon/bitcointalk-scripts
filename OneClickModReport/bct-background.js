@@ -7,6 +7,7 @@ let PROMISE_TIMEOUT = 120000;
 // Number of milliseconds to wait for a tab to load
 let TAB_TIMEOUT = 60000;
 
+
 function handle_next_resolver() {
     let p = throttled_resolvers.shift();
     if (p === undefined) {
@@ -65,15 +66,13 @@ function check_if_tab_fully_loaded(tab) {
 
 browser.runtime.onMessage.addListener(function(message, sender) {
     if (message.action_name === "close-this-tab") {
-        //console.log("Background script closing tab:");
-        //console.log(sender.tab);
         browser.tabs.remove(sender.tab.id);
     }
     else if (message.action_name === "bct-report") {
         /*
         Expected message format:
         {
-            action_name: "bct-auto-report",
+            action_name: "bct-report",
             action_url: "https://...",
             action_payload: { post_id: N, comment: "...", auto: true }
         }
@@ -101,7 +100,6 @@ browser.runtime.onMessage.addListener(function(message, sender) {
             })
             .then((loaded_tab) => browser.tabs.sendMessage(loaded_tab.id, { id: loaded_tab.id, action: tab_action, comment: message.action_payload.comment }))
             .then((tab_response) => {
-                //console.log("Tab result: " + tab_response.result);
                 message.action_result = tab_response.result;
                 return message;
             })

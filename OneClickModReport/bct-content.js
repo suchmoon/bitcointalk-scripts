@@ -1,3 +1,13 @@
+/*
+REPORT_SUBMIT_DELAY: number of milliseconds to wait before submitting the post report.
+
+Mod report counts as post/PM for throttling - if you submit reports too quickly
+the site will throw an error. One post/PM/mod report every four seconds is
+typical throttling for high-ranked accounts, more details here:
+https://bitcointalk.org/index.php?topic=237597.msg4131557#msg4131557
+*/
+let REPORT_SUBMIT_DELAY = 5000;
+
 console.log("BCT-CONTENT initialized");
 console.log("Page: " + window.location.href);
 console.log("Referrer: " + document.referrer);
@@ -13,12 +23,11 @@ function process_background_message(message, sender, send_response) {
         message.result = "OK";
     }
     if (message.action == "bct-tab-submit-report") {
-        // mod report counts as post/PM for throttling - add a delay
         setTimeout(() => {
             send_response(message);
             // Uncomment the next line to allow reports to be submitted automatically
             //document.querySelector("input[type=submit][value=Submit]").click();
-        }, 5000);
+        }, REPORT_SUBMIT_DELAY);
     } else {
         send_response(message);
     }
@@ -94,6 +103,20 @@ function create_text_field(hint) {
     return text_field;
 }
 
+function create_all_controls(button_container, post_container) {
+    button_container.appendChild(create_span("Report as: "));
+    button_container.appendChild(create_button(post_container, "zero value", "zero-value shitpost", null, true));
+    button_container.appendChild(create_button(post_container, "multi post", "two or more consecutive posts in 24h", null, true));
+    button_container.appendChild(create_button(post_container, "cross spam", "spamming their service across multiple threads - please check post history", null, true));
+    button_container.appendChild(create_button(post_container, "non-english", "non-English post on English board", null, true));
+    let url_field = create_text_field("URL of the original");
+    button_container.appendChild(create_button(post_container, "copy from:", "copy-paste from:", url_field, true));
+    button_container.appendChild(url_field);
+    let board_field = create_text_field("correct board name");
+    button_container.appendChild(create_button(post_container, "move to:", "wrong board, should be in", board_field, true));
+    button_container.appendChild(board_field);
+}
+
 // inject the buttons into each message
 document.querySelectorAll("div.post").forEach(post_container => {
     // Try to determine thread ID and post ID
@@ -114,17 +137,7 @@ document.querySelectorAll("div.post").forEach(post_container => {
             let button_container = document.createElement("div");
             button_container.className = "bct-report-button-container";
             post_container.appendChild(button_container);
-            button_container.appendChild(create_span("Report as: "));
-            button_container.appendChild(create_button(post_container, "zero value", "zero-value shitpost", null, true));
-            button_container.appendChild(create_button(post_container, "multi post", "two or more consecutive posts in 24h", null, true));
-            button_container.appendChild(create_button(post_container, "cross spam", "spamming their service across multiple threads - please check post history", null, true));
-            button_container.appendChild(create_button(post_container, "non-english", "non-English post on English board", null, true));
-            let url_field = create_text_field("URL of the original");
-            button_container.appendChild(create_button(post_container, "copy from:", "copy-paste from:", url_field, true));
-            button_container.appendChild(url_field);
-            let board_field = create_text_field("correct board name");
-            button_container.appendChild(create_button(post_container, "move to:", "wrong board, should be in", board_field, true));
-            button_container.appendChild(board_field);
+            create_all_controls(button_container, post_container);
         } else {
             console.log("Found div.post and post URL but couldn't determine thread/post ID.");
         }
@@ -137,6 +150,7 @@ if (window.location.href.startsWith("https://bitcointalk.org/index.php?action=re
     document.getElementsByName("comment")[0].style.width = "80%";
     browser.runtime.onMessage.addListener(process_background_message);
 }
+
 if (window.location.href.startsWith("https://bitcointalk.org/index.php?board=")) {
     if (document.referrer &&
         document.referrer.startsWith("https://bitcointalk.org/index.php?action=reporttm") &&
