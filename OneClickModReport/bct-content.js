@@ -148,6 +148,11 @@ function parse_datetime(s, get_today = false) {
     return false;
 }
 
+[...document.querySelectorAll("body > table td.maintab_back")].slice(-1)[0].insertAdjacentHTML(
+    'beforebegin',
+    '<td class="maintab_back" valign="top"><a href="/index.php?action=reportlist;mine">My Reports</a></td>'
+);
+
 // inject the buttons into each message
 document.querySelectorAll("div.post").forEach(post_container => {
     // Try to determine thread ID and post ID
