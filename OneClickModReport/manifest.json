@@ -9,7 +9,7 @@
   "content_scripts": [
     {
       "matches": [ "*://bitcointalk.org/*" ],
-      "js": [ "bct-content.js" ],
+      "js": [ "browser-polyfill.js", "bct-content.js" ],
       "css": [ "bct-content.css" ],
       "run_at": "document_idle"
     }
@@ -17,7 +17,7 @@
 
   "background": 
   {
-    "scripts": ["bct-background.js"]
+    "scripts": [ "browser-polyfill.js", "bct-background.js" ]
   },
   
   "permissions": [
