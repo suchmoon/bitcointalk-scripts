@@ -6,7 +6,7 @@ the site will throw an error. One post/PM/mod report every four seconds is
 typical throttling for high-ranked accounts, more details here:
 https://bitcointalk.org/index.php?topic=237597.msg4131557#msg4131557
 */
-let REPORT_SUBMIT_DELAY = 5000;
+let REPORT_SUBMIT_DELAY = 4000;
 
 console.log("BCT-CONTENT initialized");
 console.log("Page: " + window.location.href);

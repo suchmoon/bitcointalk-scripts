@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "BCT Helper",
-  "version": "0.1b",
+  "version": "0.2.1",
 
   "description": "Adds some automation for bitcointalk.org.",
 

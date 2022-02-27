@@ -1,14 +1,17 @@
 // This is an array of Promise.resolve functions that will be called sequentially with delay
 let throttled_resolvers = [];
 // Number of milliseconds to wait before resolving the next queued promise
-let PROMISE_INTERVAL = 1300;
+let PROMISE_INTERVAL = 1100;
+// Number of milliseconds the promise might take to resolve
+let PROMISE_MAX_TIME = 10000;
+// Max number of promises to allow in the queue
+let PROMISE_MAX_QUEUE = 100;
 // Number of milliseconds to wait before rejecting the queued promise
-let PROMISE_TIMEOUT = 120000;
+let PROMISE_TIMEOUT = PROMISE_MAX_QUEUE * (PROMISE_INTERVAL + PROMISE_MAX_TIME);
 // Number of milliseconds to wait for a tab to load
 let TAB_TIMEOUT = 60000;
 // List of items to persist between page loads
 let global_list = {};
-
 
 
 function handle_next_resolver() {
@@ -93,6 +96,11 @@ browser.runtime.onMessage.addListener(function(message, sender) {
         return new Promise((resolve, reject) => { resolve(global_list[message.action_payload.item_id]) });
     }
     else if (message.action_name === "bct-report") {
+        if (throttled_resolvers.length >= PROMISE_MAX_QUEUE) {
+            return new Promise((resolve, reject) => {
+                reject(new Error("[WARNING] Try again later, queue limit reached: " + PROMISE_MAX_QUEUE));
+            });
+        }
         /*
         Expected message format:
         {
